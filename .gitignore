@@ -1,0 +1,6 @@
+.git
+.vscode
+FSNetCore/.idea/
+src/App/bin/
+src/Library/
+src/App/obj/
