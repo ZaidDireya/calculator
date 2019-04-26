@@ -10,7 +10,10 @@ let rec Sum (x:List<String>) =
       | [] -> 0, []
       | a::tail ->
           let a = System.Int32.Parse a
-          if a >= 0 then
+          if a> 999 then
+             let (sum , negative) = Sum tail
+             sum, negative
+          elif a >= 0 then
              let (sum , negative) = Sum tail
              (sum + a), negative
           else
@@ -50,7 +53,7 @@ let main argv =
             
             // process a message
             try
-              printfn "message is: %i" (Add msg)
+              printfn "sum of %s : %i" msg (Add msg)
             with
               | NegativeValues(neglist) -> printfn "negatives not allowed %A" neglist
               | WrongPattren(str) -> printfn "wrong pattren %s" msg
@@ -66,7 +69,7 @@ let main argv =
     Actor.Post "1,-2"
     Actor.Post "//;\n2;14;44"
     Actor.Post "//[cc]\n2;14;44"
-    Actor.Post "//[cc]\n2cc14cc44"
+    Actor.Post "//[cc]\n2cc14cc44cc4000cc100"
     Actor.Post "//[cc]\n2;14;"
     Actor.Post "4,"
     Console.WriteLine("Press any key...")
