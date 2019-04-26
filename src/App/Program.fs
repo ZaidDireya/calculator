@@ -3,9 +3,20 @@
 open System
 open  System.Text.RegularExpressions
 
+let ExtractDelimiter (x: String) =
+    let Matches = Regex.Match( x, "^\/\/(.+)\n(.+)")
+    match Matches.Groups.Count with
+      | 3 -> Matches.Groups.[1].Value , Matches.Groups.[2].Value
+      | _ -> "," , x
+          
+          
 let Add (x : String) =
-  match Regex.IsMatch( x, "^([0-9]+[,|\n])*[0-9]+" ) with
-    | true -> Array.sumBy System.Int32.Parse (x.Split ( [|"," ; "\n"|], StringSplitOptions.RemoveEmptyEntries))
+  
+  let (delimiter, x) = ExtractDelimiter x
+  
+  let Pattern = String.concat delimiter ["^([0-9]+["; "])*[0-9]+"] 
+  match Regex.IsMatch( x, Pattern) with
+    | true -> Array.sumBy System.Int32.Parse (x.Split ( [|"," ; delimiter|], StringSplitOptions.RemoveEmptyEntries))
     | false -> -1
 
 [<EntryPoint>]
@@ -33,7 +44,10 @@ let main argv =
     Actor.Post ""
     Actor.Post "1"
     Actor.Post "1,2"
-    Actor.Post "2,14\n44,\n"
+    Actor.Post "//;\n2;14;44"
+    Actor.Post "//cc\n2;14;44"
+    Actor.Post "//cc\n2cc14cc44"
+    Actor.Post "//cc\n2;14;"
     Actor.Post "4,"
     Console.WriteLine("Press any key...")
     Console.ReadLine() |> ignore
