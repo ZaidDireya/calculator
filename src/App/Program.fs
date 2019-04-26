@@ -4,8 +4,8 @@ open System
 open  System.Text.RegularExpressions
 
 let Add (x : String) =
-  match Regex.IsMatch( x, "([0-9]+,)*[0-9]" ) with
-    | true -> Array.sumBy System.Int32.Parse (x.Split ( "," , StringSplitOptions.RemoveEmptyEntries))
+  match Regex.IsMatch( x, "^([0-9]+[,|\n])*[0-9]+" ) with
+    | true -> Array.sumBy System.Int32.Parse (x.Split ( [|"," ; "\n"|], StringSplitOptions.RemoveEmptyEntries))
     | false -> -1
 
 [<EntryPoint>]
@@ -33,7 +33,7 @@ let main argv =
     Actor.Post ""
     Actor.Post "1"
     Actor.Post "1,2"
-    Actor.Post "2,14"
+    Actor.Post "2,14\n44,\n"
     Actor.Post "4,"
     Console.WriteLine("Press any key...")
     Console.ReadLine() |> ignore
