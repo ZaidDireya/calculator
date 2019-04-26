@@ -32,7 +32,8 @@ let Add (x : String) =
   
   let (delimiter, numbers) = ExtractDelimiter x
   
-  let Pattern = String.concat delimiter ["^(-?[0-9]+"; ")*-?[0-9]+$"] 
+  let Pattern = String.concat (Regex.Escape delimiter) ["^(-?[0-9]+"; ")*-?[0-9]+$"]
+  
   match Regex.IsMatch( numbers, Pattern) with
     | true ->
         let (sum, negative) = Sum (Array.toList (numbers.Split ( [|"," ; delimiter|], StringSplitOptions.RemoveEmptyEntries)))
@@ -64,6 +65,7 @@ let main argv =
         // start the loop 
         messageLoop()
     )
+    Actor.Post "//[***]\n1***2***3"
     Actor.Post ""
     Actor.Post "1"
     Actor.Post "1,-2"
@@ -72,6 +74,7 @@ let main argv =
     Actor.Post "//[cc]\n2cc14cc44cc4000cc100"
     Actor.Post "//[cc]\n2;14;"
     Actor.Post "4,"
+    
     Console.WriteLine("Press any key...")
     Console.ReadLine() |> ignore
     0
