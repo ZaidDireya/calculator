@@ -5,6 +5,7 @@ open  System.Text.RegularExpressions
 exception NegativeValues of List<int>
 exception WrongPattren of String
 
+// calcuate the sum of numbers in string list            
 let rec Sum (x:List<String>) =
       match x with
       | [] -> 0, []
@@ -19,28 +20,31 @@ let rec Sum (x:List<String>) =
           else
              let (sum, negative) = Sum tail
              sum, a :: negative
-      
-      
+// extract the delimiter String and numbers string from string, default delimiter if pattern not found , 
 let ExtractDelimiter (x: String) =
-    let Matches = Regex.Match( x, "^\/\/\[(.+)\]\n(.+)")
+    let Matches = Regex.Match( x, "^\/\/(\[.+\])+\n(.+)")
     match Matches.Groups.Count with
-      | 3 -> Matches.Groups.[1].Value , Matches.Groups.[2].Value
-      | _ -> "," , x
-          
-          
+      | 3 -> Matches.Groups.[1].Value.Split ([| "[" ; "]" |], StringSplitOptions.RemoveEmptyEntries) , Matches.Groups.[2].Value
+      | _ -> [|","|] , x
+
+// add method to hanadle addition of string containing dilimiter and numbers
 let Add (x : String) =
+ 
+  let Delimiter, Numbers = ExtractDelimiter x
   
-  let (delimiter, numbers) = ExtractDelimiter x
+  // build regex pattren  
+  let Pattern = String.concat (Array.map Regex.Escape Delimiter |> String.concat "|") ["^(-?[0-9]+("; "))*[0-9]+$"]
   
-  let Pattern = String.concat (Regex.Escape delimiter) ["^(-?[0-9]+"; ")*-?[0-9]+$"]
+  // make sure pattren is of numbers matching the delimiter
+  match Regex.IsMatch( Numbers, Pattern) with
+  | true ->
+      let sum , negative = Sum (Array.toList (Numbers.Split ( Delimiter, StringSplitOptions.RemoveEmptyEntries)))
+      match negative with
+      | [] -> sum
+      | _ -> raise (NegativeValues negative)
+  | false -> raise (WrongPattren Numbers)
   
-  match Regex.IsMatch( numbers, Pattern) with
-    | true ->
-        let (sum, negative) = Sum (Array.toList (numbers.Split ( [|"," ; delimiter|], StringSplitOptions.RemoveEmptyEntries)))
-        match negative with
-        | [] -> sum
-        | _ -> raise (NegativeValues negative)
-    | false -> raise (WrongPattren numbers)
+  
 
 [<EntryPoint>]
 let main argv =
@@ -65,15 +69,19 @@ let main argv =
         // start the loop 
         messageLoop()
     )
-    Actor.Post "//[***]\n1***2***3"
-    Actor.Post ""
+    Actor.Post "//[oo][****][////]\n2****14////44oo4000oo100"
+    Actor.Post "//[***][222]\n1***2***3"
+    Actor.Post "//[;]\n2;14;44"
+    Actor.Post "//[oo]\n2cc14cc44cc4000cc100"
+    Actor.Post "//[;;][cc]\n2;;14;;22cc44"
+    Actor.Post "1,2,3"
     Actor.Post "1"
-    Actor.Post "1,-2"
-    Actor.Post "//;\n2;14;44"
-    Actor.Post "//[cc]\n2;14;44"
-    Actor.Post "//[cc]\n2cc14cc44cc4000cc100"
-    Actor.Post "//[cc]\n2;14;"
-    Actor.Post "4,"
+    Actor.Post "//[oo]\n2cc14cc44cc4000cc100cc"
+    Actor.Post "//[oo][****][////]\n2****14****44oo4000oo100"
+    Actor.Post "//[oo][****][////]\n2****-14****44oo4000oo100"
+    Actor.Post "//[oo][****][////]\n2****-14,44oo4000oo100"
+    Actor.Post "[oo][****][////]\n2****-14,44oo4000oo100"
+    Actor.Post "//[oo][****][////]\n2****14////44oo4000oo100"
     
     Console.WriteLine("Press any key...")
     Console.ReadLine() |> ignore
